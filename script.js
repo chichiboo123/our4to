@@ -302,8 +302,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function takePhoto() {
         if (state.isPaused || state.capturedPhotos.length >= 8) return;
         
-        // Play shutter sound
-        elements.shutterSound.play();
+        // Play shutter sound if available
+        try {
+            if (elements.shutterSound && elements.shutterSound.play) {
+                elements.shutterSound.play().catch(err => {
+                    console.log('Audio playback was prevented: ', err);
+                    // This is often due to browser autoplay restrictions
+                });
+            }
+        } catch (e) {
+            console.log('Could not play shutter sound: ', e);
+            // Continue without sound
+        }
         
         // Flash effect
         elements.flashOverlay.style.opacity = 1;
@@ -318,15 +328,44 @@ document.addEventListener('DOMContentLoaded', () => {
         const context = canvas.getContext('2d');
         const video = elements.cameraFeed;
         
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        // Set standard dimensions for better consistency
+        const standardWidth = 1280;
+        const standardHeight = 960;
+        
+        canvas.width = standardWidth;
+        canvas.height = standardHeight;
+        
+        // Fill the background with black in case the video aspect ratio doesn't match
+        context.fillStyle = 'black';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Calculate dimensions to maintain aspect ratio
+        let drawWidth, drawHeight, offsetX, offsetY;
+        const videoRatio = video.videoWidth / video.videoHeight;
+        const canvasRatio = canvas.width / canvas.height;
+        
+        if (videoRatio > canvasRatio) {
+            // Video is wider than canvas
+            drawHeight = canvas.height;
+            drawWidth = video.videoWidth * (canvas.height / video.videoHeight);
+            offsetX = (canvas.width - drawWidth) / 2;
+            offsetY = 0;
+        } else {
+            // Video is taller than canvas
+            drawWidth = canvas.width;
+            drawHeight = video.videoHeight * (canvas.width / video.videoWidth);
+            offsetX = 0;
+            offsetY = (canvas.height - drawHeight) / 2;
+        }
         
         if (state.isMirrored) {
             context.translate(canvas.width, 0);
             context.scale(-1, 1);
+            offsetX = canvas.width - offsetX - drawWidth;
         }
         
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        // Draw the video with the calculated dimensions to maintain aspect ratio
+        context.drawImage(video, offsetX, offsetY, drawWidth, drawHeight);
         
         // Store the captured photo
         const photoData = canvas.toDataURL('image/png');
@@ -445,10 +484,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // Update the composition container's aspect ratio for display
             if (state.selectedTemplate === 'grid') {
                 // For grid layout (horizontal)
-                elements.compositionContainer.style.paddingBottom = '70%'; // 16:9 aspect ratio
+                elements.compositionContainer.style.paddingBottom = '100%'; // Square aspect ratio (1:1)
+                elements.compositionContainer.style.maxWidth = '90vw';      // Limit width on mobile
+                elements.compositionContainer.style.margin = '0 auto';      // Center horizontally
             } else {
                 // For vertical layout
                 elements.compositionContainer.style.paddingBottom = '280%'; // Original vertical aspect ratio
+                elements.compositionContainer.style.maxWidth = '70vw';      // Narrower for vertical layout
+                elements.compositionContainer.style.margin = '0 auto';      // Center horizontally
             }
             
             const ctx = compositionCanvas.getContext('2d');
@@ -518,12 +561,35 @@ document.addEventListener('DOMContentLoaded', () => {
                         const width = slot.width * compositionCanvas.width;
                         const height = slot.height * compositionCanvas.height;
                         
-                        // Draw the original photo
-                        ctx.drawImage(img, x, y, width, height);
+                        // Fill the photo slot with a black background first
+                        ctx.fillStyle = '#000000';
+                        ctx.fillRect(x, y, width, height);
                         
-                        // Add a border - thinner than before
+                        // Calculate dimensions to maintain aspect ratio
+                        let drawWidth, drawHeight, offsetX, offsetY;
+                        const imgRatio = img.width / img.height;
+                        const frameRatio = width / height;
+                        
+                        if (imgRatio > frameRatio) {
+                            // Image is wider than frame
+                            drawWidth = width;
+                            drawHeight = width / imgRatio;
+                            offsetX = x;
+                            offsetY = y + (height - drawHeight) / 2;
+                        } else {
+                            // Image is taller than frame
+                            drawHeight = height;
+                            drawWidth = height * imgRatio;
+                            offsetX = x + (width - drawWidth) / 2;
+                            offsetY = y;
+                        }
+                        
+                        // Draw the original photo with aspect ratio preserved
+                        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+                        
+                        // Add a border - much thinner for cleaner look
                         ctx.strokeStyle = textColor;
-                        ctx.lineWidth = 4; // Reduced from 10 to 4 for thinner borders
+                        ctx.lineWidth = 2; // Reduced from 4 to 2 for even thinner borders
                         ctx.strokeRect(x, y, width, height);
                     });
                     

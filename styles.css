@@ -397,6 +397,7 @@ button:disabled {
     overflow: hidden;
     cursor: pointer;
     box-shadow: var(--shadow);
+    background-color: black; /* Add background for photos with different ratios */
 }
 
 .selection-photo img {
@@ -405,7 +406,8 @@ button:disabled {
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain; /* Changed from cover to contain to prevent squishing */
+    background-color: black; /* Background color for letterboxed photos */
 }
 
 .selection-photo.selected::after {
