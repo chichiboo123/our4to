@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우리네컷 사진부스</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Sunflower:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="main-title">우리네컷 사진부스</h1>
+        </header>
+
+        <main>
+            <!-- Step 1: Frame Selection -->
+            <section id="template-selection" class="step active">
+                <h2>프레임 선택</h2>
+                <div class="frame-selection-container">
+                    <div class="template-option" data-template="vertical">
+                        <div class="frame-preview vertical">
+                            <div class="photo-slot"></div>
+                            <div class="photo-slot"></div>
+                            <div class="photo-slot"></div>
+                            <div class="photo-slot"></div>
+                        </div>
+                    </div>
+                    <div class="layout-or">OR</div>
+                    <div class="template-option" data-template="grid">
+                        <div class="frame-preview grid">
+                            <div class="photo-slot"></div>
+                            <div class="photo-slot"></div>
+                            <div class="photo-slot"></div>
+                            <div class="photo-slot"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Removed Next button as per request -->
+            </section>
+
+            <!-- Step 2: Camera Section -->
+            <section id="camera-section" class="step">
+                <h2>사진 촬영</h2>
+                <div class="camera-container">
+                    <div class="smartphone-overlay">
+                        <div class="smartphone-notch"></div>
+                        <video id="camera-feed" autoplay playsinline></video>
+                        <div id="countdown-overlay">
+                            <div id="countdown">5</div>
+                            <button id="capture-now" class="capture-now-btn">즉시 촬영</button>
+                        </div>
+                        <div id="flash-overlay"></div>
+                        <canvas id="photo-canvas" style="display: none;"></canvas>
+                    </div>
+                </div>
+                <div class="camera-controls">
+                    <button id="start-capture" class="primary-btn">사진촬영</button>
+                    <button id="toggle-mirror" class="control-btn">좌우반전</button>
+                    <button id="switch-camera" class="control-btn">카메라 전환</button>
+                    <button id="pause-camera" class="control-btn">일시 중지</button>
+                </div>
+                <div class="photo-status">
+                    <p>사진 <span id="photo-count">0</span>/8</p>
+                </div>
+                <div class="photo-strip" id="captured-photos">
+                    <!-- Captured photos will appear here -->
+                </div>
+                <div class="navigation">
+                    <button id="back-to-template" class="back-btn">이전</button>
+                    <button id="next-to-selection" class="next-btn" disabled>다음</button>
+                </div>
+            </section>
+
+            <!-- Step 3: Photo Selection -->
+            <section id="photo-selection" class="step">
+                <h2>사진 선택</h2>
+                <p class="instructions">순서대로 4장의 사진을 선택하세요</p>
+                <div class="selection-grid" id="selection-grid">
+                    <!-- Photos for selection will appear here -->
+                </div>
+                <div class="navigation">
+                    <button id="back-to-camera" class="back-btn">이전</button>
+                    <button id="next-to-composition" class="next-btn" disabled>다음</button>
+                </div>
+            </section>
+
+            <!-- Step 4: Final Composition -->
+            <section id="composition-section" class="step">
+                <h2>최종 결과</h2>
+                <div class="composition-preview">
+                    <div id="composition-container">
+                        <!-- Final composition will be rendered here -->
+                    </div>
+                </div>
+                
+                <!-- Custom color palette for frame customization -->
+                <div class="color-picker-container">
+                    <label for="frame-color-picker">프레임 색상</label>
+                    <div class="color-palette">
+                        <div class="color-option" data-color="#000000" style="background-color: #000000;"></div>
+                        <div class="color-option" data-color="#FFFFFF" style="background-color: #FFFFFF; border: 1px solid #ddd;"></div>
+                        <div class="color-option" data-color="#FF0000" style="background-color: #FF0000;"></div>
+                        <div class="color-option" data-color="#FFB6C1" style="background-color: #FFB6C1;"></div> <!-- Light Pink -->
+                        <div class="color-option" data-color="#FFC0CB" style="background-color: #FFC0CB;"></div> <!-- Pink -->
+                        <div class="color-option" data-color="#FF69B4" style="background-color: #FF69B4;"></div> <!-- Hot Pink -->
+                        <div class="color-option" data-color="#FF1493" style="background-color: #FF1493;"></div> <!-- Deep Pink -->
+                        <div class="color-option" data-color="#FF7F50" style="background-color: #FF7F50;"></div> <!-- Coral -->
+                        <div class="color-option" data-color="#FFA07A" style="background-color: #FFA07A;"></div> <!-- Light Salmon -->
+                        <div class="color-option" data-color="#FA8072" style="background-color: #FA8072;"></div> <!-- Salmon -->
+                        <div class="color-option" data-color="#FFD700" style="background-color: #FFD700;"></div> <!-- Gold -->
+                        <div class="color-option" data-color="#FFFF00" style="background-color: #FFFF00;"></div> <!-- Yellow -->
+                        <div class="color-option" data-color="#FFFACD" style="background-color: #FFFACD;"></div> <!-- Lemon Chiffon -->
+                        <div class="color-option" data-color="#ADFF2F" style="background-color: #ADFF2F;"></div> <!-- Green Yellow -->
+                        <div class="color-option" data-color="#7FFF00" style="background-color: #7FFF00;"></div> <!-- Chartreuse -->
+                        <div class="color-option" data-color="#00FA9A" style="background-color: #00FA9A;"></div> <!-- Medium Spring Green -->
+                        <div class="color-option" data-color="#00CED1" style="background-color: #00CED1;"></div> <!-- Dark Turquoise -->
+                        <div class="color-option" data-color="#87CEEB" style="background-color: #87CEEB;"></div> <!-- Sky Blue -->
+                        <div class="color-option" data-color="#ADD8E6" style="background-color: #ADD8E6;"></div> <!-- Light Blue -->
+                        <div class="color-option" data-color="#B0E0E6" style="background-color: #B0E0E6;"></div> <!-- Powder Blue -->
+                        <div class="color-option" data-color="#DDA0DD" style="background-color: #DDA0DD;"></div> <!-- Plum -->
+                        <div class="color-option" data-color="#EE82EE" style="background-color: #EE82EE;"></div> <!-- Violet -->
+                        <div class="color-option" data-color="#DA70D6" style="background-color: #DA70D6;"></div> <!-- Orchid -->
+                        <div class="color-option" data-color="#FF00FF" style="background-color: #FF00FF;"></div> <!-- Magenta -->
+                    </div>
+                    <!-- Keep the original color picker as a fallback, but hidden -->
+                    <input type="color" id="frame-color-picker" value="#000000" style="display: none;">
+                </div>
+
+                <!-- Custom text input for the final composition -->
+                <div class="custom-text-container">
+                    <label for="custom-text">메시지 추가</label>
+                    <input type="text" id="custom-text" placeholder="여기에 메시지 입력..." maxlength="50">
+                    <button id="apply-text" class="control-btn">적용</button>
+                </div>
+                
+                <div class="navigation">
+                    <button id="back-to-selection" class="back-btn">이전</button>
+                    <button id="download-btn" class="primary-btn">다운로드</button>
+                    <button id="restart-btn" class="secondary-btn">처음부터 다시</button>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p><a href="https://litt.ly/chichiboo" target="_blank">created by. 교육뮤지컬 꿈꾸는 치수쌤</a></p>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>처리 중...</p>
+    </div>
+
+    <audio id="shutter-sound" src="assets/shutter.mp3" preload="auto"></audio>
+    <script src="script.js"></script>
+</body>
+</html>
