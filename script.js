@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
             name: '넓은 초원',
             background: 'linear-gradient(to bottom, #76D7EA, #9FE7C8)',
             decorations: [
-                { type: 'grass', color: '#8BC34A', height: 300, positions: [
+                { type: 'grass', color: '#8BC34A', height: 2000, positions: [
                     { x: 0, y: 0.8, width: 1 }
                 ]},
                 { type: 'cloud', color: '#FFFFFF', size: 20, positions: [
@@ -887,20 +887,29 @@ document.addEventListener('DOMContentLoaded', () => {
                             drawImgY = y - ((drawImgHeight - height) / 2);
                         }
                         
-                        // 이미지가 프레임을 벗어나지 않도록 제한
+                        // 이미지가 프레임을 벗어나지 않도록 제한 - 약간 더 크게 클리핑
                         ctx.save();
                         ctx.beginPath();
-                        ctx.rect(x, y, width, height);
+                        // 테두리가 보이지 않도록 실제 크기보다 약간 더 큰 영역 클리핑
+                        const padding = 1; // 1픽셀 추가
+                        ctx.rect(x - padding, y - padding, width + padding * 2, height + padding * 2);
                         ctx.clip();
                         
+                        // 사진틀에 완벽히 맞도록 약간 더 크게 그리기
+                        const scaleFactor = 1.005; // 0.5% 확대
+                        const adjustedWidth = drawImgWidth * scaleFactor;
+                        const adjustedHeight = drawImgHeight * scaleFactor;
+                        const adjustedX = drawImgX - (adjustedWidth - drawImgWidth) / 2;
+                        const adjustedY = drawImgY - (adjustedHeight - drawImgHeight) / 2;
+                        
                         // 이미지를 프레임에 맞게 그리기
-                        ctx.drawImage(img, drawImgX, drawImgY, drawImgWidth, drawImgHeight);
+                        ctx.drawImage(img, adjustedX, adjustedY, adjustedWidth, adjustedHeight);
                         ctx.restore();
                         
-                        // Add a border - much thinner for cleaner look
-                        ctx.strokeStyle = textColor;
-                        ctx.lineWidth = 2; // Reduced from 4 to 2 for even thinner borders
-                        ctx.strokeRect(x, y, width, height);
+                        // 테두리 제거 - 검은색 선이 보이는 문제 해결
+                        // ctx.strokeStyle = textColor;
+                        // ctx.lineWidth = 2;
+                        // ctx.strokeRect(x, y, width, height);
                     });
                     
                     // Add custom text if provided
