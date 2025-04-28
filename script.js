@@ -919,10 +919,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                   '100px "Sunflower"' : '120px "Sunflower"';
                         ctx.textAlign = 'center';
                         
-                        // Position text based on template - increased distance from photos
+                        // Position text based on template - 사진과 더 멀리 떨어지도록 위치 조정
                         const textY = state.selectedTemplate === 'grid' ? 
-                                     compositionCanvas.height - 150 : // Further down from bottom of grid layout
-                                     compositionCanvas.height - 600;  // Further down from bottom of vertical layout
+                                     compositionCanvas.height - 100 : // 그리드 레이아웃에서 더 아래로 이동
+                                     compositionCanvas.height - 350;  // 세로 레이아웃에서 더 아래로 이동
                                      
                         ctx.fillText(state.customText, compositionCanvas.width / 2, textY);
                     }
