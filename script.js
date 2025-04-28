@@ -15,7 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
         countdownValue: 5,
         photoInterval: null,
         customText: '',
-        frameColor: '#000000'
+        frameColor: '#000000',
+        activeTheme: null // 현재 선택된 테마
     };
 
     // DOM Elements
@@ -28,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         templateOptions: document.querySelectorAll('.template-option'),
         cameraFeed: document.getElementById('camera-feed'),
+        cameraPlaceholder: document.getElementById('camera-placeholder'),
         photoCanvas: document.getElementById('photo-canvas'),
         capturedPhotos: document.getElementById('captured-photos'),
         selectionGrid: document.getElementById('selection-grid'),
@@ -55,7 +57,9 @@ document.addEventListener('DOMContentLoaded', () => {
         customText: document.getElementById('custom-text'),
         applyText: document.getElementById('apply-text'),
         // Color picker elements
-        frameColorPicker: document.getElementById('frame-color-picker')
+        frameColorPicker: document.getElementById('frame-color-picker'),
+        // Theme elements
+        themeOptions: document.querySelectorAll('.theme-option')
     };
 
     // Template configurations
@@ -83,6 +87,59 @@ document.addEventListener('DOMContentLoaded', () => {
                 { x: 0.05, y: 0.52, width: 0.425, height: 0.3 }, // Slightly adjusted from y: 0.55
                 { x: 0.525, y: 0.52, width: 0.425, height: 0.3 } // Slightly adjusted from y: 0.55
             ]
+        }
+    };
+    
+    // 테마 설정
+    const themes = {
+        'little-prince': {
+            name: '어린왕자',
+            background: 'linear-gradient(to bottom, #7BA4FF, #1A66FF)',
+            decorations: [
+                { type: 'star', color: '#FFD700', size: 15, positions: [
+                    { x: 0.05, y: 0.05 }, { x: 0.2, y: 0.1 }, { x: 0.8, y: 0.07 }, 
+                    { x: 0.9, y: 0.12 }, { x: 0.15, y: 0.85 }, { x: 0.75, y: 0.92 },
+                    { x: 0.3, y: 0.93 }, { x: 0.6, y: 0.89 }
+                ]}
+            ],
+            textColor: '#FFFFFF'
+        },
+        'meadow': {
+            name: '넓은 초원',
+            background: 'linear-gradient(to bottom, #76D7EA, #9FE7C8)',
+            decorations: [
+                { type: 'grass', color: '#8BC34A', height: 300, positions: [
+                    { x: 0, y: 0.8, width: 1 }
+                ]},
+                { type: 'cloud', color: '#FFFFFF', size: 20, positions: [
+                    { x: 0.1, y: 0.1 }, { x: 0.7, y: 0.05 }, { x: 0.4, y: 0.15 }
+                ]}
+            ],
+            textColor: '#006400'
+        },
+        'malatang': {
+            name: '마라탕 7단계',
+            background: 'linear-gradient(to bottom, #FF5252, #B71C1C)',
+            decorations: [
+                { type: 'spicy', color: '#FF0000', size: 20, positions: [
+                    { x: 0.15, y: 0.05 }, { x: 0.85, y: 0.05 }, 
+                    { x: 0.15, y: 0.95 }, { x: 0.85, y: 0.95 }
+                ]}
+            ],
+            textColor: '#FFFFFF'
+        },
+        'spring': {
+            name: '길고 긴 봄',
+            background: 'linear-gradient(to bottom, #FFD1DC, #FADCE2)',
+            decorations: [
+                { type: 'cherry-blossom', color: '#FF80AB', size: 15, positions: [
+                    { x: 0.1, y: 0.1 }, { x: 0.2, y: 0.05 }, { x: 0.3, y: 0.12 },
+                    { x: 0.7, y: 0.08 }, { x: 0.8, y: 0.15 }, { x: 0.9, y: 0.1 },
+                    { x: 0.1, y: 0.85 }, { x: 0.3, y: 0.9 }, { x: 0.5, y: 0.87 },
+                    { x: 0.7, y: 0.92 }, { x: 0.9, y: 0.88 }
+                ]}
+            ],
+            textColor: '#FF4081'
         }
     };
 
@@ -169,6 +226,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 colorOptions.forEach(opt => opt.classList.remove('selected'));
                 option.classList.add('selected');
                 
+                // Reset active theme when selecting a single color
+                state.activeTheme = null;
+                elements.themeOptions.forEach(themeOpt => themeOpt.classList.remove('selected'));
+                
                 // Get the color value and update state
                 const colorValue = option.getAttribute('data-color');
                 state.frameColor = colorValue;
@@ -177,6 +238,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 elements.frameColorPicker.value = colorValue;
                 
                 // Apply the new color immediately
+                if (state.currentStep === 'composition-section') {
+                    createComposition();
+                }
+            });
+        });
+        
+        // 데스크톱과 모바일에서 모두 테마 옵션이 표시되도록 확인
+        if (elements.themeOptions && elements.themeOptions.length > 0) {
+            console.log('테마 옵션 초기화: ' + elements.themeOptions.length + '개의 테마 옵션 발견');
+        } else {
+            console.error('테마 옵션을 찾을 수 없습니다. 브라우저 콘솔을 확인해주세요.');
+        }
+        
+        // Theme selection
+        elements.themeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Update selected styling
+                elements.themeOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                
+                // Reset color selection
+                colorOptions.forEach(opt => opt.classList.remove('selected'));
+                
+                // Set active theme
+                const themeKey = option.getAttribute('data-theme');
+                state.activeTheme = themeKey;
+                
+                // Apply the new theme immediately
                 if (state.currentStep === 'composition-section') {
                     createComposition();
                 }
@@ -198,9 +287,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Camera functions
     async function startCamera() {
         try {
+            // 카메라 placeholder 안내 텍스트 표시
+            if (elements.cameraPlaceholder) {
+                elements.cameraPlaceholder.style.display = 'flex';
+            }
+            
+            // 항상 가로 모드(landscape)로 촬영되도록 설정
             const constraints = {
                 video: {
                     facingMode: state.facingMode,
+                    // 가로 비율 16:9로 강제 설정
                     width: { ideal: 1280 },
                     height: { ideal: 720 }
                 },
@@ -211,9 +307,64 @@ document.addEventListener('DOMContentLoaded', () => {
             state.videoTrack = state.stream.getVideoTracks()[0];
             elements.cameraFeed.srcObject = state.stream;
             
-            // Apply mirror effect if needed
-            applyMirrorEffect();
-
+            // 카메라가 시작되면 안내 텍스트 숨기기
+            if (elements.cameraPlaceholder) {
+                elements.cameraPlaceholder.style.display = 'none';
+            }
+            
+            elements.cameraFeed.onloadedmetadata = () => {
+                // 비디오 트랙 설정 확인
+                const settings = state.videoTrack.getSettings();
+                console.log('카메라 설정:', settings);
+                
+                // 세로/가로 모드 감지 및 처리 함수
+                const handleOrientation = () => {
+                    const isPortrait = window.innerHeight > window.innerWidth;
+                    
+                    if (isPortrait) {
+                        console.log('세로 모드 - 카메라 가로 방향으로 회전');
+                        // 세로 모드에서는 비디오를 강제로 가로로 표시
+                        elements.cameraFeed.classList.add('camera-portrait-mode');
+                        
+                        // 세로 모드에서의 미러링 효과
+                        if (state.isMirrored) {
+                            elements.cameraFeed.style.transform = 'rotate(-90deg) scaleX(-1)';
+                        } else {
+                            elements.cameraFeed.style.transform = 'rotate(-90deg)';
+                        }
+                    } else {
+                        console.log('가로 모드 - 기본 카메라 방향');
+                        // 가로 모드에서는 기본 방향으로 표시
+                        elements.cameraFeed.classList.remove('camera-portrait-mode');
+                        
+                        // 가로 모드에서의 미러링 효과
+                        if (state.isMirrored) {
+                            elements.cameraFeed.style.transform = 'scaleX(-1)';
+                        } else {
+                            elements.cameraFeed.style.transform = 'none';
+                        }
+                    }
+                };
+                
+                // 초기 방향 처리
+                handleOrientation();
+                
+                // 방향 변경 시 이벤트 리스너 등록
+                window.addEventListener('resize', handleOrientation);
+                
+                // 페이지 로드 후에도 한번 더 처리 (안전성 추가)
+                setTimeout(() => {
+                    handleOrientation();
+                }, 500);
+                
+                // 방향 변경 후에도 강제 적용 (iOS에서 더 안정적)
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(() => {
+                        handleOrientation();
+                    }, 200);
+                });
+            };
+            
             // Don't automatically start countdown - user must click the capture button
         } catch (error) {
             console.error('Error accessing camera:', error);
@@ -239,7 +390,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function applyMirrorEffect() {
-        elements.cameraFeed.style.transform = state.isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
+        // 세로 모드에서는 카메라가 회전되어 있으므로 다른 방식으로 미러링 적용
+        if (window.innerHeight > window.innerWidth) {
+            elements.cameraFeed.style.transform = state.isMirrored ? 
+                'rotate(-90deg) scaleX(-1)' : 'rotate(-90deg)';
+        } else {
+            elements.cameraFeed.style.transform = state.isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
+        }
     }
 
     function toggleMirror() {
@@ -335,36 +492,48 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.width = standardWidth;
         canvas.height = standardHeight;
         
-        // Fill the background with black in case the video aspect ratio doesn't match
-        context.fillStyle = 'black';
-        context.fillRect(0, 0, canvas.width, canvas.height);
+        // 모바일 세로 모드 여부 확인
+        const isPortrait = window.innerHeight > window.innerWidth;
         
-        // Calculate dimensions to maintain aspect ratio
-        let drawWidth, drawHeight, offsetX, offsetY;
-        const videoRatio = video.videoWidth / video.videoHeight;
-        const canvasRatio = canvas.width / canvas.height;
+        // 비디오와 캔버스 비율 계산
+        let videoWidth = video.videoWidth;
+        let videoHeight = video.videoHeight;
         
-        if (videoRatio > canvasRatio) {
-            // Video is wider than canvas
-            drawHeight = canvas.height;
-            drawWidth = video.videoWidth * (canvas.height / video.videoHeight);
-            offsetX = (canvas.width - drawWidth) / 2;
-            offsetY = 0;
-        } else {
-            // Video is taller than canvas
-            drawWidth = canvas.width;
-            drawHeight = video.videoHeight * (canvas.width / video.videoWidth);
-            offsetX = 0;
-            offsetY = (canvas.height - drawHeight) / 2;
+        // 세로 모드에서 회전된 비디오 처리
+        if (isPortrait && video.classList.contains('camera-portrait-mode')) {
+            // 비디오가 회전된 경우 가로/세로를 반대로 처리
+            [videoWidth, videoHeight] = [videoHeight, videoWidth];
         }
         
+        const videoRatio = videoWidth / videoHeight;
+        const canvasRatio = canvas.width / canvas.height;
+        
+        // 비디오를 캔버스에 꽉 차게 그리기 (검은색 여백 없음)
+        let drawWidth, drawHeight, offsetX, offsetY;
+        
+        // 가득 차게 그리기 - 종횡비를 유지하면서 캔버스를 채우도록
+        if (videoRatio > canvasRatio) {
+            // 비디오가 캔버스보다 더 넓은 경우
+            drawWidth = canvas.width;
+            drawHeight = canvas.width / videoRatio;
+            offsetX = 0;
+            offsetY = (canvas.height - drawHeight) / 2;
+        } else {
+            // 비디오가 캔버스보다 더 높은 경우
+            drawHeight = canvas.height;
+            drawWidth = canvas.height * videoRatio;
+            offsetX = (canvas.width - drawWidth) / 2;
+            offsetY = 0;
+        }
+        
+        // 미러링 처리
         if (state.isMirrored) {
             context.translate(canvas.width, 0);
             context.scale(-1, 1);
             offsetX = canvas.width - offsetX - drawWidth;
         }
         
-        // Draw the video with the calculated dimensions to maintain aspect ratio
+        // 꽉 차게 그리기
         context.drawImage(video, offsetX, offsetY, drawWidth, drawHeight);
         
         // Store the captured photo
@@ -484,30 +653,166 @@ document.addEventListener('DOMContentLoaded', () => {
             // Update the composition container's aspect ratio for display
             if (state.selectedTemplate === 'grid') {
                 // For grid layout (horizontal)
-                elements.compositionContainer.style.paddingBottom = '100%'; // Square aspect ratio (1:1)
-                elements.compositionContainer.style.maxWidth = '90vw';      // Limit width on mobile
-                elements.compositionContainer.style.margin = '0 auto';      // Center horizontally
+                elements.compositionContainer.style.paddingBottom = '60%';  // 조정된 비율
+                elements.compositionContainer.style.maxWidth = '95vw';      // 너비 약간 증가
+                elements.compositionContainer.style.margin = '0 auto';        // Center horizontally
             } else {
                 // For vertical layout
                 elements.compositionContainer.style.paddingBottom = '280%'; // Original vertical aspect ratio
-                elements.compositionContainer.style.maxWidth = '70vw';      // Narrower for vertical layout
+                elements.compositionContainer.style.maxWidth = '85vw';      // 너비 약간 증가 (세로 레이아웃)
                 elements.compositionContainer.style.margin = '0 auto';      // Center horizontally
             }
             
             const ctx = compositionCanvas.getContext('2d');
             
-            // Fill with custom frame color or default template color
-            const frameColor = state.frameColor || templateConfig.backgroundColor;
-            ctx.fillStyle = frameColor;
-            ctx.fillRect(0, 0, compositionCanvas.width, compositionCanvas.height);
+            // Track if we're using a theme or just a color
+            let textColor;
             
-            // Determine text color based on frame color brightness
-            // For dark backgrounds use white text, for light backgrounds use black text
-            const r = parseInt(frameColor.substr(1, 2), 16);
-            const g = parseInt(frameColor.substr(3, 2), 16);
-            const b = parseInt(frameColor.substr(5, 2), 16);
-            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-            const textColor = brightness > 128 ? '#000000' : '#ffffff';
+            // Apply theme if selected, otherwise use single color
+            if (state.activeTheme && themes[state.activeTheme]) {
+                const theme = themes[state.activeTheme];
+                
+                // Apply gradient background
+                if (theme.background.includes('gradient')) {
+                    // Create gradient
+                    const gradient = ctx.createLinearGradient(0, 0, 0, compositionCanvas.height);
+                    
+                    // Parse the gradient colors from the CSS linear-gradient
+                    const gradientMatch = theme.background.match(/linear-gradient\(to bottom, ([^,]+), ([^)]+)\)/);
+                    if (gradientMatch && gradientMatch.length >= 3) {
+                        gradient.addColorStop(0, gradientMatch[1]);
+                        gradient.addColorStop(1, gradientMatch[2]);
+                    } else {
+                        // Fallback if parsing fails
+                        gradient.addColorStop(0, '#76D7EA');
+                        gradient.addColorStop(1, '#1A66FF');
+                    }
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, compositionCanvas.width, compositionCanvas.height);
+                } else {
+                    // Solid color background
+                    ctx.fillStyle = theme.background;
+                    ctx.fillRect(0, 0, compositionCanvas.width, compositionCanvas.height);
+                }
+                
+                // Draw theme decorations
+                theme.decorations.forEach(decoration => {
+                    switch (decoration.type) {
+                        case 'star':
+                            // Draw stars
+                            decoration.positions.forEach(pos => {
+                                const x = pos.x * compositionCanvas.width;
+                                const y = pos.y * compositionCanvas.height;
+                                const size = decoration.size;
+                                drawStar(ctx, x, y, 5, size/2, size, decoration.color);
+                            });
+                            break;
+                            
+                        case 'grass':
+                            // Draw grass at the bottom
+                            ctx.fillStyle = decoration.color;
+                            const grassHeight = decoration.height;
+                            decoration.positions.forEach(pos => {
+                                const x = pos.x * compositionCanvas.width;
+                                const y = pos.y * compositionCanvas.height;
+                                const width = pos.width * compositionCanvas.width;
+                                ctx.fillRect(x, y, width, grassHeight);
+                            });
+                            break;
+                            
+                        case 'cloud':
+                            // Draw clouds
+                            ctx.fillStyle = decoration.color;
+                            decoration.positions.forEach(pos => {
+                                const x = pos.x * compositionCanvas.width;
+                                const y = pos.y * compositionCanvas.height;
+                                const size = decoration.size;
+                                drawCloud(ctx, x, y, size * 3, size * 1.5);
+                            });
+                            break;
+                            
+                        case 'spicy':
+                            // Draw chili pepper icons for malatang theme
+                            decoration.positions.forEach(pos => {
+                                const x = pos.x * compositionCanvas.width;
+                                const y = pos.y * compositionCanvas.height;
+                                const size = decoration.size;
+                                ctx.font = `${size * 2}px serif`;
+                                ctx.fillStyle = decoration.color;
+                                ctx.fillText('🌶️', x, y);
+                            });
+                            break;
+                            
+                        case 'cherry-blossom':
+                            // Draw cherry blossoms
+                            decoration.positions.forEach(pos => {
+                                const x = pos.x * compositionCanvas.width;
+                                const y = pos.y * compositionCanvas.height;
+                                const size = decoration.size;
+                                ctx.font = `${size * 2}px serif`;
+                                ctx.fillStyle = decoration.color;
+                                ctx.fillText('🌸', x, y);
+                            });
+                            break;
+                    }
+                });
+                
+                // Use theme text color
+                textColor = theme.textColor;
+                
+            } else {
+                // No theme, use single color background
+                const frameColor = state.frameColor || templateConfig.backgroundColor;
+                ctx.fillStyle = frameColor;
+                ctx.fillRect(0, 0, compositionCanvas.width, compositionCanvas.height);
+                
+                // Determine text color based on frame color brightness
+                // For dark backgrounds use white text, for light backgrounds use black text
+                const r = parseInt(frameColor.substr(1, 2), 16);
+                const g = parseInt(frameColor.substr(3, 2), 16);
+                const b = parseInt(frameColor.substr(5, 2), 16);
+                const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+                textColor = brightness > 128 ? '#000000' : '#ffffff';
+            }
+            
+            // Helper function to draw a star
+            function drawStar(ctx, cx, cy, spikes, innerRadius, outerRadius, color) {
+                let rot = Math.PI / 2 * 3;
+                let x = cx;
+                let y = cy;
+                const step = Math.PI / spikes;
+                
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - outerRadius);
+                
+                for (let i = 0; i < spikes; i++) {
+                    x = cx + Math.cos(rot) * outerRadius;
+                    y = cy + Math.sin(rot) * outerRadius;
+                    ctx.lineTo(x, y);
+                    rot += step;
+                    
+                    x = cx + Math.cos(rot) * innerRadius;
+                    y = cy + Math.sin(rot) * innerRadius;
+                    ctx.lineTo(x, y);
+                    rot += step;
+                }
+                
+                ctx.lineTo(cx, cy - outerRadius);
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
+            }
+            
+            // Helper function to draw a cloud
+            function drawCloud(ctx, x, y, width, height) {
+                ctx.beginPath();
+                ctx.arc(x, y + height/2, height/2, 0, Math.PI * 2);
+                ctx.arc(x + width/3, y + height/2, height/2.5, 0, Math.PI * 2);
+                ctx.arc(x + width/1.5, y + height/2, height/3, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.fill();
+            }
             
             // Add title - position differently for each layout
             ctx.fillStyle = textColor;
@@ -561,31 +866,36 @@ document.addEventListener('DOMContentLoaded', () => {
                         const width = slot.width * compositionCanvas.width;
                         const height = slot.height * compositionCanvas.height;
                         
-                        // Fill the photo slot with a black background first
-                        ctx.fillStyle = '#000000';
-                        ctx.fillRect(x, y, width, height);
-                        
-                        // Calculate dimensions to maintain aspect ratio
-                        let drawWidth, drawHeight, offsetX, offsetY;
+                        // 이미지 비율 계산 및 맞춤
                         const imgRatio = img.width / img.height;
-                        const frameRatio = width / height;
+                        const slotRatio = width / height;
                         
-                        if (imgRatio > frameRatio) {
-                            // Image is wider than frame
-                            drawWidth = width;
-                            drawHeight = width / imgRatio;
-                            offsetX = x;
-                            offsetY = y + (height - drawHeight) / 2;
+                        // 이미지 여백 없이 슬롯에 꽉 차게 그리기
+                        let drawImgWidth, drawImgHeight, drawImgX, drawImgY;
+                        
+                        if (imgRatio > slotRatio) {
+                            // 이미지가 슬롯보다 가로가 더 넓은 경우
+                            drawImgHeight = height;
+                            drawImgWidth = height * imgRatio;
+                            drawImgX = x - ((drawImgWidth - width) / 2);
+                            drawImgY = y;
                         } else {
-                            // Image is taller than frame
-                            drawHeight = height;
-                            drawWidth = height * imgRatio;
-                            offsetX = x + (width - drawWidth) / 2;
-                            offsetY = y;
+                            // 이미지가 슬롯보다 세로가 더 높은 경우
+                            drawImgWidth = width;
+                            drawImgHeight = width / imgRatio;
+                            drawImgX = x;
+                            drawImgY = y - ((drawImgHeight - height) / 2);
                         }
                         
-                        // Draw the original photo with aspect ratio preserved
-                        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+                        // 이미지가 프레임을 벗어나지 않도록 제한
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.rect(x, y, width, height);
+                        ctx.clip();
+                        
+                        // 이미지를 프레임에 맞게 그리기
+                        ctx.drawImage(img, drawImgX, drawImgY, drawImgWidth, drawImgHeight);
+                        ctx.restore();
                         
                         // Add a border - much thinner for cleaner look
                         ctx.strokeStyle = textColor;

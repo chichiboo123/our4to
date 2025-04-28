@@ -233,12 +233,15 @@ button:disabled {
     position: relative;
     width: 100%;
     max-width: 640px;
-    height: 480px;
+    height: 60vh;
     margin: 0 auto 20px;
     overflow: hidden;
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
     background-color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #camera-feed {
@@ -293,6 +296,66 @@ button:disabled {
     overflow: hidden;
     border: 10px solid #222;
     box-shadow: 0 0 0 2px #444;
+}
+
+/* 카메라 권한 안내 텍스트 */
+#camera-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1;
+    text-align: center;
+    padding: 20px;
+    font-size: 1.2rem;
+}
+
+/* 모바일 세로 모드에서 카메라 가로 표시 */
+@media screen and (max-width: 768px) and (orientation: portrait) {
+    .camera-container {
+        height: 50vh; /* 세로 모드에서 높이 조정 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        /* 최소 높이 지정으로 너무 작아지지 않도록 */
+        min-height: 300px;
+    }
+    
+    #camera-feed {
+        position: absolute;
+        width: 100%; 
+        height: 100%;
+        object-fit: cover;
+        z-index: 2;
+    }
+    
+    /* 세로 모드에서 비디오 회전 스타일 */
+    #camera-feed.camera-portrait-mode {
+        transform: rotate(-90deg);
+        transform-origin: center;
+        width: 150vh; /* 더 넓게 설정하여 꽉 차게 함 */
+        height: auto;
+        max-width: none;
+        position: absolute;
+        z-index: 5;
+    }
+    
+    .smartphone-overlay {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
 }
 
 .smartphone-notch {
@@ -397,7 +460,6 @@ button:disabled {
     overflow: hidden;
     cursor: pointer;
     box-shadow: var(--shadow);
-    background-color: black; /* Add background for photos with different ratios */
 }
 
 .selection-photo img {
@@ -406,8 +468,7 @@ button:disabled {
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain; /* Changed from cover to contain to prevent squishing */
-    background-color: black; /* Background color for letterboxed photos */
+    object-fit: cover; /* 항상 프레임에 꽉 차게 표시 */
 }
 
 .selection-photo.selected::after {
@@ -534,6 +595,72 @@ button:disabled {
     border: none;
     position: absolute;
     opacity: 0;
+}
+
+/* Theme Selection Styles */
+.theme-container {
+    text-align: center;
+    margin: 20px auto;
+    max-width: 400px;
+}
+
+.theme-container label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 500;
+    font-size: 1.1rem;
+}
+
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+@media screen and (max-width: 480px) {
+    .theme-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.theme-option {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    padding: 5px;
+    border-radius: 10px;
+}
+
+.theme-option:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.theme-option.selected {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px var(--primary-color);
+}
+
+.theme-preview {
+    height: 60px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-icon {
+    font-size: 24px;
+    position: relative;
+    z-index: 2;
+}
+
+.theme-name {
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
 .image-adjustments {

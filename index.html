@@ -47,7 +47,8 @@
                 <div class="camera-container">
                     <div class="smartphone-overlay">
                         <div class="smartphone-notch"></div>
-                        <video id="camera-feed" autoplay playsinline></video>
+                        <video id="camera-feed" autoplay playsinline muted></video>
+                        <div id="camera-placeholder">카메라를 시작하려면 권한을 허용해주세요.</div>
                         <div id="countdown-overlay">
                             <div id="countdown">5</div>
                             <button id="capture-now" class="capture-now-btn">즉시 촬영</button>
@@ -127,6 +128,44 @@
                     </div>
                     <!-- Keep the original color picker as a fallback, but hidden -->
                     <input type="color" id="frame-color-picker" value="#000000" style="display: none;">
+                </div>
+                
+                <!-- Theme selection -->
+                <div class="theme-container">
+                    <label>테마 선택</label>
+                    <div class="theme-grid">
+                        <!-- 어린왕자 테마 -->
+                        <div class="theme-option" data-theme="little-prince">
+                            <div class="theme-preview" style="background: linear-gradient(to bottom, #7BA4FF, #1A66FF);">
+                                <span class="theme-icon">✨</span>
+                            </div>
+                            <div class="theme-name">어린왕자</div>
+                        </div>
+                        
+                        <!-- 넓은 초원 테마 -->
+                        <div class="theme-option" data-theme="meadow">
+                            <div class="theme-preview" style="background: linear-gradient(to bottom, #76D7EA, #9FE7C8);">
+                                <span class="theme-icon">🌱</span>
+                            </div>
+                            <div class="theme-name">넓은 초원</div>
+                        </div>
+                        
+                        <!-- 마라탕 7단계 테마 -->
+                        <div class="theme-option" data-theme="malatang">
+                            <div class="theme-preview" style="background: linear-gradient(to bottom, #FF5252, #B71C1C);">
+                                <span class="theme-icon">🌶️</span>
+                            </div>
+                            <div class="theme-name">마라탕 7단계</div>
+                        </div>
+                        
+                        <!-- 길고 긴 봄 테마 -->
+                        <div class="theme-option" data-theme="spring">
+                            <div class="theme-preview" style="background: linear-gradient(to bottom, #FFD1DC, #FADCE2);">
+                                <span class="theme-icon">🌸</span>
+                            </div>
+                            <div class="theme-name">길고 긴 봄</div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Custom text input for the final composition -->
